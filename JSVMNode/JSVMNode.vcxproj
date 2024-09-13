@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{be596d9a-fbe4-4f70-a20f-6eac7dfc81be}</ProjectGuid>
+    <RootNamespace>JSVMNode</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <SccProjectName>
+    </SccProjectName>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\..\node\src;..\..\node\deps\uv\include;..\..\node\deps\v8\include;..\..\node\deps\openssl\openssl\include;..\..\node\deps\simdjson;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\node\out\Debug\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>..\Lib\</OutDir>
+    <TargetName>$(ProjectName)D</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\Lib\</OutDir>
+    <IncludePath>..\..\node\src;..\..\node\deps\uv\include;..\..\node\deps\v8\include;..\..\node\deps\openssl\openssl\include;..\..\node\deps\simdjson;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\node\out\Release\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NODEJSVM_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NODEJSVM_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_GLIBCXX_USE_CXX11_ABI=1;NODE_OPENSSL_CONF_NAME=nodejs_conf;NODE_OPENSSL_HAS_QUIC;ICU_NO_USER_DATA_OVERRIDE;V8_ENABLE_CHECKS;OPENSSL_THREADS;FD_SETSIZE=1024;NODE_PLATFORM="win32";NODE_USE_V8_PLATFORM=1;NODE_V8_SHARED_RO_HEAP;NODE_HAVE_I18N_SUPPORT=1;NODE_BUNDLED_ZLIB;HAVE_OPENSSL=1;OPENSSL_API_COMPAT=0x10100000L;UCONFIG_NO_SERVICE=1;U_ENABLE_DYLOAD=0;U_STATIC_IMPLEMENTATION=1;U_HAVE_STD_STRING=1;UCONFIG_NO_BREAK_ITERATION=0;OPENSSL_BUILDING_OPENSSL;OPENSSL_SYS_WIN32;AES_ASM;BSAES_ASM;CMLL_ASM;ECP_NISTZ256_ASM;GHASH_ASM;KECCAK1600_ASM;MD5_ASM;OPENSSL_BN_ASM_GF2m;OPENSSL_BN_ASM_MONT;OPENSSL_BN_ASM_MONT5;OPENSSL_CPUID_OBJ;OPENSSL_IA32_SSE2;PADLOCK_ASM;POLY1305_ASM;RC4_ASM;SHA1_ASM;SHA256_ASM;SHA512_ASM;VPAES_ASM;WHIRLPOOL_ASM;X25519_ASM;OPENSSL_PIC;NGTCP2_STATICLIB;NGHTTP2_STATICLIB;NGHTTP3_STATICLIB;_HAS_EXCEPTIONS=0;HAVE_INSPECTOR=1;NODE_WANT_INTERNALS=1;NOMINMAX;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;DEBUG;_DEBUG;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NODEJSVM_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetDir)$(TargetFileName) $(ProjectDir)..\Work\$(TargetFileName)
+copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb
+copy /y $(ProjectDir)include\*.* $(ProjectDir)..\..\Libs\OtherInclude\JSVMNode</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_GLIBCXX_USE_CXX11_ABI=1;NODE_OPENSSL_CONF_NAME=nodejs_conf;NODE_OPENSSL_HAS_QUIC;ICU_NO_USER_DATA_OVERRIDE;V8_ENABLE_CHECKS;OPENSSL_THREADS;FD_SETSIZE=1024;NODE_PLATFORM="win32";NODE_USE_V8_PLATFORM=1;NODE_V8_SHARED_RO_HEAP;NODE_HAVE_I18N_SUPPORT=1;NODE_BUNDLED_ZLIB;HAVE_OPENSSL=1;OPENSSL_API_COMPAT=0x10100000L;UCONFIG_NO_SERVICE=1;U_ENABLE_DYLOAD=0;U_STATIC_IMPLEMENTATION=1;U_HAVE_STD_STRING=1;UCONFIG_NO_BREAK_ITERATION=0;OPENSSL_BUILDING_OPENSSL;OPENSSL_SYS_WIN32;AES_ASM;BSAES_ASM;CMLL_ASM;ECP_NISTZ256_ASM;GHASH_ASM;KECCAK1600_ASM;MD5_ASM;OPENSSL_BN_ASM_GF2m;OPENSSL_BN_ASM_MONT;OPENSSL_BN_ASM_MONT5;OPENSSL_CPUID_OBJ;OPENSSL_IA32_SSE2;PADLOCK_ASM;POLY1305_ASM;RC4_ASM;SHA1_ASM;SHA256_ASM;SHA512_ASM;VPAES_ASM;WHIRLPOOL_ASM;X25519_ASM;OPENSSL_PIC;NGTCP2_STATICLIB;NGHTTP2_STATICLIB;NGHTTP3_STATICLIB;_HAS_EXCEPTIONS=0;HAVE_INSPECTOR=1;NODE_WANT_INTERNALS=1;NOMINMAX;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NDEBUG;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NODEJSVM_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetDir)$(TargetFileName) $(ProjectDir)..\Work\$(TargetFileName)
+copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="include\CallWrap.h" />
+    <ClInclude Include="include\jsvm_interface.h" />
+    <ClInclude Include="include\JSVMNode.h" />
+    <ClInclude Include="include\TypeWrap.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="jsvm_vm_impl.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="node_snapshot_stub.cc" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Utils\Utils.vcxproj">
+      <Project>{f4126b50-6b57-4b34-a58a-987d6b4219c8}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
