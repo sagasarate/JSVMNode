@@ -708,21 +708,19 @@ namespace JSVM
 		return RT();
 	};
 
-	template<typename Handle, typename DisposeFn>
+	template<typename T, bool (*DisposeFn)(T*)>
 	class CAutoDisposer
 	{
 	protected:
-		Handle	m_Handle;
-		DisposeFn m_DisposeFn;
+		T* m_Handle;
 	public:
-		CAutoDisposer(Handle handle, DisposeFn Fn)
+		CAutoDisposer(T* handle)
 		{
 			m_Handle = handle;
-			m_DisposeFn = Fn;
 		}
 		~CAutoDisposer()
 		{
-			m_DisposeFn(m_Handle);
+			DisposeFn(m_Handle);
 		}
 	};
 

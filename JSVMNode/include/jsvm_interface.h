@@ -45,6 +45,7 @@ namespace JSVM
 		jsvm_api_create_uint64,
 		jsvm_api_create_double,
 		jsvm_api_create_string_utf8,
+		jsvm_api_create_string_gbk,		
 		jsvm_api_create_string_utf16,
 		jsvm_api_create_binary_empty,
 		jsvm_api_create_binary,
@@ -62,6 +63,8 @@ namespace JSVM
 		jsvm_api_get_value_double,
 		jsvm_api_get_value_string_utf8,
 		jsvm_api_get_value_string_utf8_no_buff,
+		jsvm_api_get_value_string_gbk,
+		jsvm_api_get_value_string_gbk_no_buff,		
 		jsvm_api_get_value_string_utf16,
 		jsvm_api_get_value_string_utf16_no_buff,
 		jsvm_api_get_value_binary,
@@ -274,6 +277,7 @@ namespace JSVM
 		{"jsvm_create_uint64",NULL},
 		{"jsvm_create_double",NULL},
 		{"jsvm_create_string_utf8",NULL},
+		{"jsvm_create_string_gbk",NULL},		
 		{"jsvm_create_string_utf16",NULL},
 		{"jsvm_create_binary_empty",NULL},
 		{"jsvm_create_binary",NULL},
@@ -291,6 +295,8 @@ namespace JSVM
 		{"jsvm_get_value_double",NULL},
 		{"jsvm_get_value_string_utf8",NULL},
 		{"jsvm_get_value_string_utf8_no_buff",NULL},
+		{"jsvm_get_value_string_gbk",NULL},
+		{"jsvm_get_value_string_gbk_no_buff",NULL},		
 		{"jsvm_get_value_string_utf16",NULL},
 		{"jsvm_get_value_string_utf16_no_buff",NULL},
 		{"jsvm_get_value_binary",NULL},
@@ -401,7 +407,11 @@ namespace JSVM
 			}
 			else
 			{
-				PrintImportantLog("load module[%s] failed.", szDllPath);
+#ifdef WIN32
+				PrintImportantLog("load module[%s] failed:%d", szDllPath, GetLastError());
+#else
+				PrintImportantLog("load module[%s] failed:%s", szDllPath, dlerror());
+#endif
 			}
 			return false;
 		}
@@ -521,6 +531,10 @@ namespace JSVM
 		{
 			return ((jsvm_value * (*)(jsvm_context*, const char*, size_t))JSVMApiManager::m_APIList[jsvm_api_create_string_utf8].pFunc)(context, str, length);
 		}
+		inline jsvm_value* jsvm_create_string_gbk(jsvm_context* context, const char* str, size_t length = 0)
+		{
+			return ((jsvm_value * (*)(jsvm_context*, const char*, size_t))JSVMApiManager::m_APIList[jsvm_api_create_string_gbk].pFunc)(context, str, length);
+		}
 		inline jsvm_value* jsvm_create_string_utf16(jsvm_context* context, const WCHAR* str, size_t length = 0)
 		{
 			return ((jsvm_value * (*)(jsvm_context*, const WCHAR*, size_t))JSVMApiManager::m_APIList[jsvm_api_create_string_utf16].pFunc)(context, str, length);
@@ -585,6 +599,14 @@ namespace JSVM
 		inline const char* jsvm_get_value_string_utf8_no_buff(jsvm_context* context, jsvm_value* value)
 		{
 			return ((const char* (*)(jsvm_context*, jsvm_value*))JSVMApiManager::m_APIList[jsvm_api_get_value_string_utf8_no_buff].pFunc)(context, value);
+		}
+		inline int jsvm_get_value_string_gbk(jsvm_context* context, jsvm_value* value, char* buf, int bufsize)
+		{
+			return ((int (*)(jsvm_context*, jsvm_value*, char*, int))JSVMApiManager::m_APIList[jsvm_api_get_value_string_gbk].pFunc)(context, value, buf, bufsize);
+		}
+		inline const char* jsvm_get_value_string_gbk_no_buff(jsvm_context* context, jsvm_value* value)
+		{
+			return ((const char* (*)(jsvm_context*, jsvm_value*))JSVMApiManager::m_APIList[jsvm_api_get_value_string_gbk_no_buff].pFunc)(context, value);
 		}
 		inline int jsvm_get_value_string_utf16(jsvm_context* context, jsvm_value* value, WCHAR* buf, int bufsize)
 		{
@@ -851,9 +873,9 @@ namespace JSVM
 		{
 			return ((bool (*)(jsvm_vm*, const char*))JSVMApiManager::m_APIList[jsvm_api_heap_dump].pFunc)(vm, dump_file_name);
 		}
-		inline void jsvm_gc(jsvm_vm* vm, int level, unsigned int idle_time, bool full_gc)
+		inline void jsvm_gc(jsvm_vm* vm, int level, bool full_gc)
 		{
-			((void (*)(jsvm_vm*, int, unsigned int, bool))JSVMApiManager::m_APIList[jsvm_api_gc].pFunc)(vm, level, idle_time, full_gc);
+			((void (*)(jsvm_vm*, int, bool))JSVMApiManager::m_APIList[jsvm_api_gc].pFunc)(vm, level, full_gc);
 		}
 
 		inline void jsvm_set_console_log_channel(jsvm_vm* vm, unsigned int LogChannel)
@@ -892,6 +914,7 @@ namespace JSVM
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_uint64(jsvm_context* context, UINT64 value);
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_double(jsvm_context* context, double value);
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_string_utf8(jsvm_context* context, const char* str, size_t length = 0);
+		JSVM_DLL_EXPORT jsvm_value* jsvm_create_string_gbk(jsvm_context* context, const char* str, size_t length = 0);
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_string_utf16(jsvm_context* context, const WCHAR* str, size_t length = 0);
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_binary_empty(jsvm_context* context, size_t length);
 		JSVM_DLL_EXPORT jsvm_value* jsvm_create_binary(jsvm_context* context, void* data, size_t length);
@@ -909,6 +932,8 @@ namespace JSVM
 		JSVM_DLL_EXPORT double jsvm_get_value_double(jsvm_context* context, jsvm_value* value);
 		JSVM_DLL_EXPORT int jsvm_get_value_string_utf8(jsvm_context* context, jsvm_value* value, char* buf, int bufsize);
 		JSVM_DLL_EXPORT const char* jsvm_get_value_string_utf8_no_buff(jsvm_context* context, jsvm_value* value);
+		JSVM_DLL_EXPORT int jsvm_get_value_string_gbk(jsvm_context* context, jsvm_value* value, char* buf, int bufsize);
+		JSVM_DLL_EXPORT const char* jsvm_get_value_string_gbk_no_buff(jsvm_context* context, jsvm_value* value);
 		JSVM_DLL_EXPORT int jsvm_get_value_string_utf16(jsvm_context* context, jsvm_value* value, WCHAR* buf, int bufsize);
 		JSVM_DLL_EXPORT const WCHAR* jsvm_get_value_string_utf16_no_buff(jsvm_context* context, jsvm_value* value);
 		JSVM_DLL_EXPORT void* jsvm_get_value_binary(jsvm_context* context, jsvm_value* value, size_t* len);
@@ -985,7 +1010,7 @@ namespace JSVM
 
 		JSVM_DLL_EXPORT void jsvm_heap_stat(jsvm_vm* vm, vm_heap_stat* stat_info);
 		JSVM_DLL_EXPORT bool jsvm_heap_dump(jsvm_vm* vm, const char* dump_file_name);
-		JSVM_DLL_EXPORT void jsvm_gc(jsvm_vm* vm, int level, unsigned int idle_time, bool full_gc);
+		JSVM_DLL_EXPORT void jsvm_gc(jsvm_vm* vm, int level, bool full_gc);
 
 		JSVM_DLL_EXPORT void jsvm_set_console_log_channel(jsvm_vm* vm, unsigned int LogChannel);
 #endif

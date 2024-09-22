@@ -133,12 +133,14 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;ncrypto.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /y $(TargetDir)$(TargetFileName) $(ProjectDir)..\Work\$(TargetFileName)
@@ -158,6 +160,7 @@ copy /y $(ProjectDir)include\*.* $(ProjectDir)..\..\Libs\OtherInclude\JSVMNode</
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,11 +168,12 @@ copy /y $(ProjectDir)include\*.* $(ProjectDir)..\..\Libs\OtherInclude\JSVMNode</
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;psapi.lib;userenv.lib;crypt32.lib;winmm.lib;libuv.lib;uvwasi.lib;icudata.lib;icui18n.lib;icuucx.lib;openssl.lib;ncrypto.lib;histogram.lib;simdjson.lib;simdutf.lib;brotli.lib;nbytes.lib;zlib.lib;zlib_inflate_chunk_simd.lib;zlib_adler32_simd.lib;ada.lib;cares.lib;nghttp2.lib;nghttp3.lib;ngtcp2.lib;llhttp.lib;sqlite.lib;v8_zlib.lib;v8_abseil.lib;v8_libbase.lib;v8_compiler.lib;v8_snapshot.lib;v8_base_without_compiler.lib;v8_libplatform.lib;v8_turboshaft.lib;libnode.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /y $(TargetDir)$(TargetFileName) $(ProjectDir)..\Work\$(TargetFileName)
-copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb</Command>
+copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb
+copy /y $(ProjectDir)include\*.* $(ProjectDir)..\..\Libs\OtherInclude\JSVMNode</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -181,7 +185,6 @@ copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb</Co
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="jsvm_vm_impl.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
@@ -197,6 +200,9 @@ copy /y $(TargetDir)$(TargetName).pdb $(ProjectDir)..\Work\$(TargetName).pdb</Co
     <ProjectReference Include="..\..\Libs\Utils\Utils.vcxproj">
       <Project>{f4126b50-6b57-4b34-a58a-987d6b4219c8}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

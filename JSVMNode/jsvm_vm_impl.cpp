@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "v8-util.h"
 
 using v8::V8;
 
@@ -64,15 +65,16 @@ namespace JSVM
 				delete scope;
 			}
 			scope_list.Clear();
-			if (setup.get() != NULL)
-				node::Stop(setup->env());
-			setup.reset();
 
 			if (keepalive_async_handle.data)
 			{
 				uv_close(reinterpret_cast<uv_handle_t*>(&keepalive_async_handle), nullptr);
 				keepalive_async_handle.data = NULL;
-			}			
+			}
+
+			if (setup.get() != NULL)
+				node::Stop(setup->env());
+			setup.reset();
 		}
 		jsvm_handle_scope_impl* CreateScope()
 		{
@@ -177,7 +179,7 @@ namespace JSVM
 			int line_number = frame->GetLineNumber();
 			int column = frame->GetColumn();
 
-			UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLog(LogChannel, Level, Tag, "    at %s:%s(%d:%d)",
 				*script_name,
 				(function_name.length() > 0) ? *function_name : "<anonymous> ",
@@ -193,7 +195,7 @@ namespace JSVM
 		ScriptFile.SetLocalCodePage(CP_UTF8);
 		if (ScriptFile.LoadFile(*specifier_utf8, false))
 		{
-			v8::ScriptOrigin origin(isolate, specifier, 0, 0, false, -1, v8::Local<v8::Value>(), false, false, true);
+			v8::ScriptOrigin origin(specifier, 0, 0, false, -1, v8::Local<v8::Value>(), false, false, true);
 			v8::ScriptCompiler::Source source(v8::String::NewFromUtf8(isolate, ScriptFile.GetData()).ToLocalChecked(), origin);
 			auto module = v8::ScriptCompiler::CompileModule(isolate, &source);
 
@@ -228,7 +230,7 @@ namespace JSVM
 		ScriptFile.SetLocalCodePage(CP_UTF8);
 		if (ScriptFile.LoadFile(*Spec, false))
 		{
-			v8::ScriptOrigin origin(isolate, specifier, 0, 0, false, -1, v8::Local<v8::Value>(), false, false, true);
+			v8::ScriptOrigin origin(specifier, 0, 0, false, -1, v8::Local<v8::Value>(), false, false, true);
 			v8::ScriptCompiler::Source source(v8::String::NewFromUtf8(isolate, ScriptFile.GetData()).ToLocalChecked(), origin);
 			auto module = v8::ScriptCompiler::CompileModule(isolate, &source);
 
@@ -249,21 +251,38 @@ namespace JSVM
 
 
 
-	void V8ValueToUtf8(v8::Isolate* isolate, v8::Local<v8::Value> Value, char* StrBuff, size_t BuffLen)
+	void V8ValueToStr(v8::Isolate* isolate, v8::Local<v8::Value> Value, char* StrBuff, size_t BuffLen)
 	{
-		v8::Local<v8::String> Str;
-		if (Value->IsSymbol())
+		if(!Value.IsEmpty())
 		{
-			Str = Value.As<v8::Symbol>()->Description(isolate).As<v8::String>();
-		}
-		else
-		{
-			Value->ToString(isolate->GetCurrentContext()).ToLocal(&Str);
-		}
-		if (!Str.IsEmpty())
-		{
-			Str->WriteUtf8(isolate, StrBuff, (int)BuffLen);
-			StrBuff[BuffLen - 1] = 0;
+			v8::Local<v8::String> Str;
+			if (Value->IsSymbol())
+			{
+				Str = Value.As<v8::Symbol>()->Description(isolate).As<v8::String>();
+			}
+			else
+			{
+				Value->ToString(isolate->GetCurrentContext()).ToLocal(&Str);
+			}
+			if (!Str.IsEmpty())
+			{
+				if (CEasyStringA::SYSTEM_STRING_CODE_PAGE == CEasyStringA::STRING_CODE_PAGE_UTF8)
+				{
+					Str->WriteUtf8(isolate, StrBuff, (int)BuffLen);
+					StrBuff[BuffLen - 1] = 0;
+				}
+				else
+				{
+					WCHAR TransBuffer[4096];
+					int UCS2Len = Str->Write(isolate, (uint16_t*)TransBuffer, 0, (int)BuffLen);
+					BuffLen = UnicodeToAnsi(TransBuffer, UCS2Len, StrBuff, BuffLen);
+					StrBuff[BuffLen - 1] = 0;
+				}
+			}
+			else
+			{
+				strcpy_s(StrBuff, BuffLen, "NULL");
+			}
 		}
 		else
 		{
@@ -278,8 +297,8 @@ namespace JSVM
 			v8::Local<v8::Value> Msg;
 			scope_impl->trycatch.StackTrace(scope_impl->content).ToLocal(&Msg);
 			char Buff[4096];
-			V8ValueToUtf8(scope_impl->isolate, Msg, Buff, 4096);
-			UINT LogChannel = (UINT)scope_impl->isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			V8ValueToStr(scope_impl->isolate, Msg, Buff, 4096);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(scope_impl->isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_NORMAL, "exception", Buff);
 			scope_impl->trycatch.Reset();
 			return true;
@@ -292,8 +311,8 @@ namespace JSVM
 		char Buff[4096];
 		for (int i = 0; i < args.Length(); i++)
 		{
-			V8ValueToUtf8(isolate, args[i], Buff, 4096);
-			UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			V8ValueToStr(isolate, args[i], Buff, 4096);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_DEBUG, "console_log", Buff);
 		}
 	}
@@ -302,8 +321,8 @@ namespace JSVM
 		char Buff[4096];
 		for (int i = 0; i < args.Length(); i++)
 		{
-			V8ValueToUtf8(isolate, args[i], Buff, 4096);
-			UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			V8ValueToStr(isolate, args[i], Buff, 4096);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_NORMAL, "console_warn", Buff);
 		}
 	}
@@ -312,8 +331,8 @@ namespace JSVM
 		char Buff[4096];
 		for (int i = 0; i < args.Length(); i++)
 		{
-			V8ValueToUtf8(isolate, args[i], Buff, 4096);
-			UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			V8ValueToStr(isolate, args[i], Buff, 4096);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_NORMAL, "console_error", Buff);
 		}
 	}
@@ -322,8 +341,8 @@ namespace JSVM
 		char Buff[4096];
 		for (int i = 0; i < args.Length(); i++)
 		{
-			V8ValueToUtf8(isolate, args[i], Buff, 4096);
-			UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+			V8ValueToStr(isolate, args[i], Buff, 4096);
+			UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 			CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_DEBUG, "console_trace", Buff);
 			//v8::Local<v8::StackTrace> stack_trace = v8::StackTrace::CurrentStackTrace(isolate, 20);
 			//PrintStackTrace(isolate, stack_trace, "trace", ILogPrinter::LOG_LEVEL_DEBUG);
@@ -338,20 +357,20 @@ namespace JSVM
 			{
 				for (int i = 1; i < args.Length(); i++)
 				{
-					V8ValueToUtf8(isolate, args[i], Buff, 4096);
-					UINT LogChannel = (UINT)isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL);
+					V8ValueToStr(isolate, args[i], Buff, 4096);
+					UINT LogChannel = static_cast<UINT>(reinterpret_cast<uintptr_t>(isolate->GetData(ISOLATE_DATA_SLOT_LOG_CHANNEL)));
 					CLogManager::GetInstance()->PrintLogDirect(LogChannel, ILogPrinter::LOG_LEVEL_NORMAL, "console_assert", Buff);
 				}
 			}
 		}
 	}
 
-	class FileStream : public v8::OutputStream
+	class FileStreamForDump : public v8::OutputStream
 	{
 	protected:
 		IFileAccessor* m_File;
 	public:
-		~FileStream()
+		~FileStreamForDump()
 		{
 			Close();
 		}
@@ -910,6 +929,28 @@ namespace JSVM
 		}
 		return NULL;
 	}
+	jsvm_value* jsvm_create_string_gbk(jsvm_context* context, const char* str, size_t length)
+	{
+		if (context && str)
+		{
+			v8::Context* ctx = reinterpret_cast<v8::Context*>(context);
+			size_t UCS2Len = AnsiToUnicode(str, length, NULL, 0);
+			if (UCS2Len <= 4096)
+			{
+				uint16_t TransBuffer[4096];
+				AnsiToUnicode(str, length, (WCHAR*)TransBuffer, 4096);
+				return (jsvm_value*)(*v8::String::NewFromTwoByte(ctx->GetIsolate(), (const uint16_t*)TransBuffer, v8::NewStringType::kNormal, (int)UCS2Len).ToLocalChecked());
+			}
+			else
+			{
+				auto TransBuffer = v8::ArrayBuffer::New(ctx->GetIsolate(), UCS2Len * sizeof(uint16_t));
+				uint16_t* pTransBuffer = (uint16_t*)TransBuffer->GetBackingStore()->Data();
+				AnsiToUnicode(str, length, (WCHAR*)pTransBuffer, 4096);
+				return (jsvm_value*)(*v8::String::NewFromTwoByte(ctx->GetIsolate(), (const uint16_t*)pTransBuffer, v8::NewStringType::kNormal, (int)UCS2Len).ToLocalChecked());
+			}
+		}
+		return NULL;
+	}
 	jsvm_value* jsvm_create_string_utf16(jsvm_context* context, const WCHAR* str, size_t length)
 	{
 		if (context && str)
@@ -1082,7 +1123,7 @@ namespace JSVM
 				{
 					int WriteLen = 0;
 					str.ToLocalChecked()->WriteUtf8(ctx->GetIsolate(), buf, bufsize - 1, &WriteLen);
-					buf[bufsize - 1] = 0;
+					buf[WriteLen] = 0;
 					return WriteLen;
 				}
 				else
@@ -1103,10 +1144,95 @@ namespace JSVM
 			{
 				auto str = Str.ToLocalChecked();
 				int len = str->Utf8Length(ctx->GetIsolate());
-				auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), len + 1);
-				char* pBuff = (char*)buff->GetBackingStore()->Data();
-				str->WriteUtf8(ctx->GetIsolate(), pBuff, len);
-				return pBuff;
+				if (len <= 0)
+				{
+					return CEasyStringA::EMPTY_PSTR;
+				}
+				else
+				{
+					auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), len + 1);
+					char* pBuff = (char*)buff->GetBackingStore()->Data();
+					str->WriteUtf8(ctx->GetIsolate(), pBuff, len);
+					return pBuff;
+				}
+			}
+		}
+		return NULL;
+	}
+	int jsvm_get_value_string_gbk(jsvm_context* context, jsvm_value* value, char* buf, int bufsize)
+	{
+		if (context && value)
+		{
+			v8::Local<v8::Context> ctx = jsvm_context_to_v8_local_context(context);
+			auto Str = reinterpret_cast<v8::Value*>(value)->ToString(ctx);
+			if (!Str.IsEmpty())
+			{
+				auto str = Str.ToLocalChecked();
+				v8::String::Value StrValue(ctx->GetIsolate(), str);
+				int len = StrValue.length();
+				if (len <= 0)
+				{
+					if (buf)
+						buf[0] = 0;
+					return 0;
+				}
+				else if (len <= 4096)
+				{
+					uint16_t TransBuffer[4096];
+					len = str->Write(ctx->GetIsolate(), TransBuffer, 0, len);
+					size_t GBKLen = UnicodeToAnsi((const WCHAR*)TransBuffer, len, buf, bufsize);
+					return (int)GBKLen;
+				}
+				else
+				{
+					auto TransBuffer = v8::ArrayBuffer::New(ctx->GetIsolate(), len * sizeof(uint16_t));
+					uint16_t* pTransBuffer = (uint16_t*)TransBuffer->GetBackingStore()->Data();
+					len = str->Write(ctx->GetIsolate(), pTransBuffer, 0, len);
+					size_t GBKLen = UnicodeToAnsi((const WCHAR*)pTransBuffer, len, buf, bufsize);
+					return (int)GBKLen;
+				}
+			}
+		}
+		return -1;
+	}
+	const char* jsvm_get_value_string_gbk_no_buff(jsvm_context* context, jsvm_value* value)
+	{
+		if (context && value)
+		{
+			v8::Local<v8::Context> ctx = jsvm_context_to_v8_local_context(context);
+			auto Str = reinterpret_cast<v8::Value*>(value)->ToString(ctx);
+			if (!Str.IsEmpty())
+			{
+				auto str = Str.ToLocalChecked();
+				v8::String::Value StrValue(ctx->GetIsolate(), str);
+				int len = StrValue.length();
+				if (len <= 0)
+				{
+					return CEasyStringA::EMPTY_PSTR;
+				}
+				else if (len < 4096)
+				{
+					uint16_t TransBuffer[4096];
+					len = str->Write(ctx->GetIsolate(), TransBuffer, 0, len);
+					size_t GBKLen = UnicodeToAnsi((const WCHAR*)TransBuffer, len, NULL, 0);
+					auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), GBKLen + 1);
+					char* pBuff = (char*)buff->GetBackingStore()->Data();
+					UnicodeToAnsi((const WCHAR*)TransBuffer, len, pBuff, GBKLen);
+					pBuff[GBKLen] = 0;
+					return (const char*)pBuff;
+				}
+				else
+				{
+					auto TransBuffer = v8::ArrayBuffer::New(ctx->GetIsolate(), len * sizeof(uint16_t));
+					uint16_t* pTransBuffer = (uint16_t*)TransBuffer->GetBackingStore()->Data();
+					len = str->Write(ctx->GetIsolate(), pTransBuffer, 0, len);
+					size_t GBKLen = UnicodeToAnsi((const WCHAR*)pTransBuffer, len, NULL, 0);
+					auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), GBKLen + 1);
+					char* pBuff = (char*)buff->GetBackingStore()->Data();
+					UnicodeToAnsi((const WCHAR*)pTransBuffer, len, pBuff, GBKLen);
+					pBuff[GBKLen] = 0;
+					return (const char*)pBuff;
+				}
 			}
 		}
 		return NULL;
@@ -1122,7 +1248,7 @@ namespace JSVM
 				if (buf)
 				{
 					int WriteLen = str.ToLocalChecked()->Write(ctx->GetIsolate(), (uint16_t*)buf, 0, bufsize - 1);
-					buf[bufsize - 1] = 0;
+					buf[WriteLen] = 0;
 					return WriteLen;
 				}
 				else
@@ -1143,11 +1269,18 @@ namespace JSVM
 			{
 				auto str = Str.ToLocalChecked();
 				int len = str->Length();
-				auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), (len + 1) * sizeof(uint16_t));
-				uint16_t* pBuff = (uint16_t*)buff->GetBackingStore()->Data();
-				str->Write(ctx->GetIsolate(), pBuff, 0, len);
-				pBuff[len] = 0;
-				return (const WCHAR*)pBuff;
+				if (len <= 0)
+				{
+					return CEasyStringW::EMPTY_PSTR;
+				}
+				else
+				{
+					auto buff = v8::ArrayBuffer::New(ctx->GetIsolate(), (len + 1) * sizeof(uint16_t));
+					uint16_t* pBuff = (uint16_t*)buff->GetBackingStore()->Data();
+					str->Write(ctx->GetIsolate(), pBuff, 0, len);
+					pBuff[len] = 0;
+					return (const WCHAR*)pBuff;
+				}
 			}
 		}
 		return NULL;
@@ -1807,7 +1940,7 @@ namespace JSVM
 				return true;
 			v8::Local<v8::Value> Msg;
 			scope_impl->trycatch.StackTrace(scope_impl->content).ToLocal(&Msg);
-			V8ValueToUtf8(scope_impl->isolate, Msg, msg_buff, buff_len);
+			V8ValueToStr(scope_impl->isolate, Msg, msg_buff, buff_len);
 			msg_buff[buff_len - 1] = 0;
 			scope_impl->trycatch.Reset();
 			return true;
@@ -1873,7 +2006,7 @@ namespace JSVM
 		jsvm_vm_impl* pVM = (jsvm_vm_impl*)vm;
 		if (pVM)
 		{
-			FileStream Stream;
+			FileStreamForDump Stream;
 			if (Stream.Open(dump_file_name))
 			{
 				const v8::HeapSnapshot* pShanshot = pVM->setup->isolate()->GetHeapProfiler()->TakeHeapSnapshot();
@@ -1886,16 +2019,20 @@ namespace JSVM
 		}
 		return false;
 	}
-	void jsvm_gc(jsvm_vm* vm, int level, unsigned int idle_time, bool full_gc)
+	void jsvm_gc(jsvm_vm* vm, int level, bool full_gc)
 	{
 		jsvm_vm_impl* pVM = (jsvm_vm_impl*)vm;
 		if (pVM)
 		{
 			if (level == 0)
 			{
-				pVM->setup->isolate()->IdleNotificationDeadline(idle_time / 1000.0);
+				pVM->setup->isolate()->MemoryPressureNotification(v8::MemoryPressureLevel::kModerate);
 			}
 			else if (level == 1)
+			{
+				pVM->setup->isolate()->MemoryPressureNotification(v8::MemoryPressureLevel::kCritical);
+			}
+			else if (level == 2)
 			{
 				pVM->setup->isolate()->LowMemoryNotification();
 			}

@@ -153,11 +153,17 @@ namespace JSVM
 		}
 		static const char* FromJS(jsvm_context* context, jsvm_value* Value)
 		{
-			return jsvm_get_value_string_utf8_no_buff(context, Value);
+			if (CEasyStringA::SYSTEM_STRING_CODE_PAGE == CEasyStringA::STRING_CODE_PAGE_UTF8)
+				return jsvm_get_value_string_utf8_no_buff(context, Value);
+			else
+				return jsvm_get_value_string_gbk_no_buff(context, Value);
 		}
 		static jsvm_value* ToJS(jsvm_context* context, const char* Value)
 		{
-			return jsvm_create_string_utf8(context, Value, -1);
+			if (CEasyStringA::SYSTEM_STRING_CODE_PAGE == CEasyStringA::STRING_CODE_PAGE_UTF8)
+				return jsvm_create_string_utf8(context, Value);
+			else
+				return jsvm_create_string_gbk(context, Value);
 		}
 	};
 
@@ -174,7 +180,7 @@ namespace JSVM
 		}
 		static jsvm_value* ToJS(jsvm_context* context, const WCHAR* Value)
 		{
-			return jsvm_create_string_utf16(context, Value, -1);
+			return jsvm_create_string_utf16(context, Value);
 		}
 	};
 
@@ -188,15 +194,28 @@ namespace JSVM
 		static CEasyStringA FromJS(jsvm_context* context, jsvm_value* Value)
 		{
 			CEasyStringA Str;
-			size_t Len = 0;
-			Len = jsvm_get_value_string_utf8(context, Value, NULL, 0);
-			Str.Resize(Len);
-			jsvm_get_value_string_utf8(context, Value, Str.GetBuffer(), Len + 1);
+			if (CEasyStringA::SYSTEM_STRING_CODE_PAGE == CEasyStringA::STRING_CODE_PAGE_UTF8)
+			{
+				size_t Len = 0;
+				Len = jsvm_get_value_string_utf8(context, Value, NULL, 0);
+				Str.Resize(Len);
+				jsvm_get_value_string_utf8(context, Value, Str.GetBuffer(), Len + 1);
+			}
+			else
+			{
+				size_t Len = 0;
+				Len = jsvm_get_value_string_gbk(context, Value, NULL, 0);
+				Str.Resize(Len);
+				jsvm_get_value_string_gbk(context, Value, Str.GetBuffer(), Len + 1);
+			}
 			return Str;
 		}
 		static jsvm_value* ToJS(jsvm_context* context, const CEasyStringA& Value)
 		{
-			return jsvm_create_string_utf8(context, Value, -1);
+			if (CEasyStringA::SYSTEM_STRING_CODE_PAGE == CEasyStringA::STRING_CODE_PAGE_UTF8)
+				return jsvm_create_string_utf8(context, Value, Value.GetLength());
+			else
+				return jsvm_create_string_gbk(context, Value, Value.GetLength());
 		}
 	};
 
@@ -218,7 +237,7 @@ namespace JSVM
 		}
 		static jsvm_value* ToJS(jsvm_context* context, const CEasyStringW& Value)
 		{
-			return jsvm_create_string_utf16(context, Value, -1);
+			return jsvm_create_string_utf16(context, Value, Value.GetLength());
 		}
 	};
 

@@ -38,14 +38,14 @@
     <ClCompile Include="pch.cpp">
       <Filter>预编译头文件</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>DLLMain</Filter>
-    </ClCompile>
     <ClCompile Include="node_snapshot_stub.cc">
       <Filter>DLLMain</Filter>
     </ClCompile>
     <ClCompile Include="jsvm_vm_impl.cpp">
       <Filter>JSVM</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>
